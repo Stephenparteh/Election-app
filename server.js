@@ -12,6 +12,8 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+let image = path.join(__dirname, "public", "images", "random.png");
+
 // Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -29,7 +31,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Middleware for static files
-app.use(express.static(path.join(__dirname, "public")));
+app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 let userInfo = {};
@@ -141,15 +143,31 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/dashboard", (req, res) => {
-  if (userInfo) {
-    res.render("dashboard.ejs", { user: userInfo });
-  } else {
-    res.redirect("/login");
-  }
+  // if (userInfo) {
+  //   res.render("dashboard.ejs", { user: userInfo, image: image });
+  // } else {
+  //   res.redirect("/login");
+  // }
+
+  // db.get(`SELECT * FROM user WHERE role_id=voter`, []);
+  db.all(`SELECT * FROM user WHERE role_id="voter"`, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send("Error fetching users");
+    }
+    const totalcount = rows.length;
+    res.render("dashboard", { totalcount: totalcount });
+  });
 });
 
 app.get("/voterregistration", (req, res) => {
-  res.render("voter_registration.ejs");
+  db.all(`SELECT * FROM roles`, [], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.redirect("/voterregistration");
+    }
+    res.render("voter_registration.ejs", { roles: rows });
+  });
 });
 
 app.get("/", (req, res) => {

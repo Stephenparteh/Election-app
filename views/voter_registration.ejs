@@ -55,17 +55,11 @@
                         <input type="text" class="form-control" id="userName" name="userName"
                             placeholder="Choose a username" required>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="userName" class="form-label">User Name</label>
-                        <input type="text" class="form-control" id="userName" name="userName"
-                            placeholder="Choose a username" required>
-                    </div>
                     <div class="mb-3">
                         <label for="dob" class="form-label">Date of Birth</label>
                         <input type="date" class="form-control" id="dob" name="dob" required>
                     </div>
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                         <label for="role" class="form-label">Role</label>
                         <select class="form-select" id="role" name="role" required>
                             <option value="" disabled selected>Select your role</option>
@@ -73,7 +67,20 @@
                             <option value="candidate">Candidate</option>
                             <option value="voter">Voter</option>
                         </select>
+                    </div> -->
+                    <div class="mb-3">
+                        <label for="role">Select Role:</label>
+                        <select id="role" name="role">
+                            <% roles.forEach(function(role) { %>
+                                <option value="<%= role.role %>">
+                                    <%= role.role %>
+                                </option>
+                                <% }); %>
+                        </select>
                     </div>
+
+
+
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password"
