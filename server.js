@@ -221,6 +221,24 @@ app.get("/voterregistration", (req, res) => {
   });
 });
 
+app.get("/voter", (req, res) => {
+  db.all(`SELECT * FROM user WHERE role_id="voter"`, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send("Error fetching users");
+    }
+    let idd = 1;
+    const totalVoters = rows;
+    res.render("voter", {
+      totalVoters: totalVoters,
+      idd: idd,
+    });
+    // const user = req.session.user;
+  });
+
+  // res.render("voter.ejs");
+});
+
 app.get("/", (req, res) => {
   res.redirect("/voterregistration");
 });
