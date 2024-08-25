@@ -61,48 +61,43 @@
 
         <!-- Main Content -->
         <div class="main-content p-4" style="flex: 1;">
-            <h1 class="mb-4">Total Voters</h1>
+            <h1 class="mb-4">Total Contestants</h1>
             <div class="row">
                 <div class="col-md-8">
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-
                                 <th>Photo</th>
                                 <th>First Name</th>
                                 <th>Middle Name</th>
                                 <th>Last Name</th>
-                                <th>Vote</th>
+                                <th>Position</th>
+                                <th>Party</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% totalVoters.forEach(function(totalVoter) { %>
+
+                            <% contestants.forEach(function(contestant) { %>
                                 <tr>
                                     <td>
-                                        <img src="<%= totalVoter.photo %>" class="img-fluid rounded-circle"
+                                        <img src="<%= contestant.photo %>" class="img-fluid rounded-circle"
                                             style="height: 65px; width: 65px; object-fit: cover;" alt="">
                                     </td>
                                     <td>
-                                        <%= totalVoter.first_name %>
+                                        <%= contestant.first_name %>
                                     </td>
                                     <td>
-                                        <%= totalVoter.middle_name %>
+                                        <%= contestant.middle_name %>
                                     </td>
                                     <td>
-                                        <%= totalVoter.last_name %>
+                                        <%= contestant.last_name %>
                                     </td>
-                                    <!-- <td>
-                                        <a href="/votecontestant" class="btn btn-primary">Select to Vote</a>
-                                    </td> -->
                                     <td>
-                                        <% if (totalVoter.vote_id==="TRUE" ) { %>
-                                            <button class="btn btn-success">Voted</button>
-                                            <% } else { %>
-                                                <a href="/votecontestant" class="btn btn-primary">Select to Vote</a>
-                                                <% } %>
+                                        <%= contestant.position_id %>
                                     </td>
-
-
+                                    <td>
+                                        <%= contestant.party_id %>
+                                    </td>
                                 </tr>
                                 <% }) %>
                         </tbody>

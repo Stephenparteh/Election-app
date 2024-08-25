@@ -14,14 +14,26 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Middleware for static files
+app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use(
   session({
     secret: "my-secret-key", // Replace with a strong secret key
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true }, // Set to true if using HTTPS
+    cookie: { secure: false }, // Set to true if using HTTPS
   })
 );
+
+function isAuthenticated(req, res, next) {
+  if (req.session.userInfo) {
+    return next(); // User is authenticated, proceed to the next middleware/route
+  } else {
+    res.redirect("/login"); // User is not authenticated, redirect to login page
+  }
+}
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
@@ -39,13 +51,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Middleware for static files
-app.use("/public", express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 let userInfo = {};
 let current_user = {};
-
+let contestant_idd = {};
+let current_user_id = this.lastID;
+console.log("User ID:" + current_user.id);
 // Database setup
 const db = new sqlite3.Database("./election.db");
 
@@ -132,21 +142,19 @@ app.post("/login", (req, res) => {
   console.log("Login Info:", loginInfo);
 
   db.get(
-    `SELECT * FROM user WHERE email = ? AND password = ?`,
+    `SELECT * FROM auth WHERE email = ? AND password = ?`,
     [loginInfo.loginEmail, loginInfo.loginPassword],
     (err, row) => {
       if (err) {
         console.log(err.message);
         return res.redirect("/login");
       }
-
       if (row) {
-        // req.session.userInfo = row;
-
-        console.log("User Info:", userInfo);
+        req.session.userInfo = row;
+        userInfo = req.session.userInfo; // Assign userInfo to the session's user info
+        console.log("User Info Login Route:", userInfo);
         console.log("Login Successful!!");
-        current_user = row;
-        // console.log(user.first_name);
+        // current_user = row;
         res.redirect("/dashboard");
         // res.render("dashboard.ejs", { user: user });
       } else {
@@ -157,10 +165,12 @@ app.post("/login", (req, res) => {
   );
 });
 
-app.get("/dashboard", (req, res) => {
+app.get("/dashboard", isAuthenticated, (req, res) => {
   // if (!req.session.userInfo) {
   //   return res.redirect("/login"); // Redirect if not logged in
   // }
+  const current_user = req.session.userInfo; // Retrieve the current logged-in user info
+  console.log(`Dashboard user: ${current_user}`);
   db.all(`SELECT * FROM user WHERE role_id="voter"`, (err, rows) => {
     if (err) {
       console.error(err.message);
@@ -171,17 +181,15 @@ app.get("/dashboard", (req, res) => {
         console.error(err.message);
         return res.status(500).send("Error fetching candidates");
       }
-      const candidateFirstName = candid.first_name;
+
       const candidateName = candid;
       const totalCandidates = candid.length;
       const totalVoters = rows.length;
-      console.log("FirstName", candidateFirstName);
-      console.log("LastName", candidateName);
+
       res.render("dashboard", {
         totalVoters: totalVoters,
         totalCandidates: totalCandidates,
         current_user: current_user,
-        candidateFirstName: candidateFirstName,
         candidateName: candidateName,
         // user: req.session.userInfo,
       });
@@ -221,33 +229,7 @@ app.get("/voterregistration", (req, res) => {
   });
 });
 
-app.get("/voter", (req, res) => {
-  db.all(`SELECT * FROM user WHERE role_id="voter"`, (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).send("Error fetching users");
-    }
-    let idd = 1;
-    const totalVoters = rows;
-    res.render("voter", {
-      totalVoters: totalVoters,
-      idd: idd,
-    });
-    // const user = req.session.user;
-  });
-
-  // res.render("voter.ejs");
-});
-
-app.get("/", (req, res) => {
-  res.redirect("/voterregistration");
-});
-
 app.post("/voterregistration", upload.single("photo"), (req, res) => {
-  // // Log the entire request body to debug
-  // console.log("Request Body: ", req.body);
-  // console.log("Uploaded File: ", req.file);
-
   const voterData = {
     firstName: req.body.firstName,
     middleName: req.body.middleName,
@@ -261,61 +243,176 @@ app.post("/voterregistration", upload.single("photo"), (req, res) => {
     password: req.body.password,
     photo: req.file ? req.file.path : null, // Save the file path
   };
+
   console.log(voterData);
 
+  const insertAuth = (userId) => {
+    db.run(
+      `INSERT INTO auth (user_name, email, password, user_id) VALUES (?, ?, ?, ?)`,
+      [voterData.userName, voterData.email, voterData.password, userId],
+      function (err) {
+        if (err) {
+          return console.log("Auth Table Insert Error: ", err.message);
+        }
+        console.log("Auth Data:", voterData);
+        res.redirect("/login");
+      }
+    );
+  };
+
   if (voterData.role === "candidate") {
-    db.run(
-      `INSERT INTO candidates (first_name, middle_name, last_name, position_id, photo, party_id) VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        voterData.firstName,
-        voterData.middleName,
-        voterData.lastName,
-        voterData.position,
-        voterData.photo,
-        voterData.party,
-      ],
-      function (err) {
-        if (err) {
-          return console.log(err.message);
+    db.serialize(() => {
+      db.run(
+        `INSERT INTO candidates (first_name, middle_name, last_name, position_id, photo, party_id) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          voterData.firstName,
+          voterData.middleName,
+          voterData.lastName,
+          voterData.position,
+          voterData.photo,
+          voterData.party,
+        ],
+        function (err) {
+          if (err) {
+            return console.log("Candidates Table Insert Error: ", err.message);
+          }
+          
+          const candidateId = this.lastID;
+          db.run(
+            `INSERT INTO auth (user_name, email, password, user_id) VALUES (?, ?, ?, ?)`,
+            [
+              voterData.userName,
+              voterData.email,
+              voterData.password,
+              candidateId,
+            ],
+            function (err) {
+              if (err) {
+                return console.log("Auth Table Insert Error: ", err.message);
+              }
+              console.log("Candidate Data:", voterData);
+              res.redirect("/login");
+            }
+          );
         }
-        userInfo = voterData;
-        console.log("Candidate Data: ", userInfo);
-        res.redirect("/login");
-      }
-    );
+      );
+    });
   } else {
+    db.serialize(() => {
+      db.run(
+        `INSERT INTO user (first_name, middle_name, last_name, email, dob, password, role_id, photo, party_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          voterData.firstName,
+          voterData.middleName,
+          voterData.lastName,
+          voterData.email,
+          voterData.DateOfBirth,
+          voterData.password,
+          voterData.role,
+          voterData.photo,
+          null,
+        ],
+        function (err) {
+          if (err) {
+            return console.log("User Table Insert Error: ", err.message);
+          }
+          const userId = this.lastID;
+          insertAuth(userId);
+        }
+      );
+    });
+  }
+});
+
+app.get("/voter", (req, res) => {
+  db.all(`SELECT * FROM user WHERE role_id="voter"`, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send("Error fetching users");
+    }
+    // db.run(`SELECT `)
+
+    let idd = 1;
+    const totalVoters = rows;
+    res.render("voter", {
+      totalVoters: totalVoters,
+      idd: idd,
+    });
+    // const user = req.session.user;
+  });
+
+  // res.render("voter.ejs");
+});
+
+app.get("/parties", (req, res) => {
+  db.all(`SELECT * FROM parties`, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send("Error fetching parties");
+    }
+    res.render("parties", { parties: rows });
+  });
+});
+
+app.get("/contestants", (req, res) => {
+  db.all(`SELECT * FROM candidates`, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send("Error fetching contestants");
+    }
+    res.render("contestant", { contestants: rows });
+  });
+});
+
+app.post("/votecontestant", (req, res) => {
+  const current_user = req.session.userInfo;
+
+  const contestant_voted = {
+    contestant_id: req.body.candidateId,
+  };
+
+  contestant_idd = contestant_voted;
+
+  console.log(contestant_voted);
+  console.log(contestant_idd);
+
+  db.run(
+    `UPDATE user SET vote_id = ? WHERE id = ?`,
+    ["TRUE", current_user.user_id],
+    function (err) {
+      if (err) {
+        return console.log(err.message);
+      }
+
+      res.redirect("/voter");
+    }
+  );
+});
+
+app.get("/votecontestant", (req, res) => {
+  const current_user = req.session.userInfo;
+  console.log(contestant_idd);
+  db.all(`SELECT * FROM candidates`, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send("Error fetching contestants");
+    }
     db.run(
-      `INSERT INTO user (first_name, middle_name, last_name, email, dob, password, role_id, photo, party_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        voterData.firstName,
-        voterData.middleName,
-        voterData.lastName,
-        voterData.email,
-        voterData.DateOfBirth,
-        voterData.password,
-        voterData.role,
-        voterData.photo, // Save the file path or blob
-        null,
-      ],
+      `INSERT INTO votes (candidate_id, vote, user_id) VALUES (?, ?, ?)`,
+      [contestant_idd.contestant_id, 1, current_user.id],
       function (err) {
         if (err) {
-          return console.log(err.message);
+          return console.log("Votes Table Insert Error: ", err.message);
         }
-        userInfo = voterData;
-        console.log("Voter Data: ", userInfo);
-        res.redirect("/login");
+        // console.log("Candidae Data:", rows);
       }
     );
-    // db.run(
-    //   `INSERT INTO auth (user_name,email,password,user_id) VALUES (?,?,?,?)`,
-    //   [
-    //     voterData.userName,
-    //     voterData.email,
-    //     voterData.password,
-    //     voterData.
-    //   ]
-    // );
-  }
+    res.render("vote_contestant", { contestants: rows });
+  });
+});
+
+app.get("/", (req, res) => {
+  res.redirect("/voterregistration");
 });
 
 app.get("/partyregistration", (req, res) => {

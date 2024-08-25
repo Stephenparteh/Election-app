@@ -12,9 +12,9 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Election App</a>
+            <a class="navbar-brand fw-bold" href="#">Election App</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -31,20 +31,36 @@
 
     <!-- Sidebar -->
     <div class="d-flex">
-        <div class="sidebar p-3 bg-light" style="min-width: 200px;">
-            <h5>Dashboard</h5>
-            <a class="d-block mb-2" href="/dashboard">Home</a>
-            <a class="d-block mb-2" href="/voter">Voters</a>
-            <a class="d-block mb-2" href="/parties">Parties</a>
-            <a class="d-block mb-2" href="/position">Position</a>
-            <a class="d-block mb-2" href="/contestants">Contestants</a>
-            <a class="d-block mb-2" href="/elections">Elections</a>
-            <a class="d-block mb-2" href="/users">Users</a>
+        <div class="sidebar p-3 bg-light border-end" style="min-width: 220px;">
+            <h5 class="fw-bold">Dashboard</h5>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a class="nav-link active" href="/dashboard">Home</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="/voter">Voters</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="/parties">Parties</a>
+                </li>
+                <!-- <li class="nav-item mb-2">
+                    <a class="nav-link" href="/position">Position</a>
+                </li> -->
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="/contestants">Contestants</a>
+                </li>
+                <!-- <li class="nav-item mb-2">
+                    <a class="nav-link" href="/elections">Elections</a>
+                </li> -->
+                <!-- <li class="nav-item mb-2">
+                    <a class="nav-link" href="/users">Users</a>
+                </li> -->
+            </ul>
         </div>
 
         <!-- Main Content -->
         <div class="main-content p-4 mt-5" style="flex: 1;">
-            <h1>Welcome <%= current_user.first_name %> to your Election Dashboard</h1>
+            <h1>Welcome <%= current_user.user_name %> to your Election Dashboard</h1>
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <div class="card">
@@ -87,10 +103,11 @@
             <div class="col-md-4 mb-4">
                 <div class="card">
                     <div class="card-body">
-                        <img src="/public/images/random.png" class="img-fluid" alt="Chairman Image">
+                        <img src="/public/images/solomon.jfif" class="img-fluid"
+                            style="height: 200px; width: 100%; object-fit: cover;" alt="Chairman Image">
 
                         <h5 class="card-title">
-                            <%= candidateFirstName %>
+                            Solomon Billot
                         </h5>
                         <p class="card-text">393 Votes</p>
                         <div class="progress">
@@ -103,7 +120,8 @@
             <div class="col-md-4 mb-4">
                 <div class="card">
                     <div class="card-body">
-                        <img src="../public/images/random.png" class="img-fluid" alt="Chairman Image">
+                        <img src="../public/images/varne.jfif" class="img-fluid"
+                            style="height: 200px; width: 100%; object-fit: cover;" alt="Chairman Image">
                         <h5 class="card-title">Varney Weeks</h5>
                         <p class="card-text">295 Votes</p>
                         <div class="progress">
@@ -117,7 +135,9 @@
             <div class="col-md-4 mb-4">
                 <div class="card">
                     <div class="card-body">
-                        <img src="../public/images/random.png" class="img-fluid" alt="Chairman Image">
+                        <img src="../public/images/cristiano.jfif"
+                            style="height: 200px; width: 100%; object-fit: cover;" class="img-fluid"
+                            alt="Chairman Image">
                         <h5 class="card-title">Cristiano Farah</h5>
                         <p class="card-text">300 Votes</p>
                         <div class="progress">

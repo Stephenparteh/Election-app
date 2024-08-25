@@ -61,52 +61,29 @@
 
         <!-- Main Content -->
         <div class="main-content p-4" style="flex: 1;">
-            <h1 class="mb-4">Total Voters</h1>
-            <div class="row">
-                <div class="col-md-8">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-
-                                <th>Photo</th>
-                                <th>First Name</th>
-                                <th>Middle Name</th>
-                                <th>Last Name</th>
-                                <th>Vote</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% totalVoters.forEach(function(totalVoter) { %>
-                                <tr>
-                                    <td>
-                                        <img src="<%= totalVoter.photo %>" class="img-fluid rounded-circle"
-                                            style="height: 65px; width: 65px; object-fit: cover;" alt="">
-                                    </td>
-                                    <td>
-                                        <%= totalVoter.first_name %>
-                                    </td>
-                                    <td>
-                                        <%= totalVoter.middle_name %>
-                                    </td>
-                                    <td>
-                                        <%= totalVoter.last_name %>
-                                    </td>
-                                    <!-- <td>
-                                        <a href="/votecontestant" class="btn btn-primary">Select to Vote</a>
-                                    </td> -->
-                                    <td>
-                                        <% if (totalVoter.vote_id==="TRUE" ) { %>
-                                            <button class="btn btn-success">Voted</button>
-                                            <% } else { %>
-                                                <a href="/votecontestant" class="btn btn-primary">Select to Vote</a>
-                                                <% } %>
-                                    </td>
-
-
-                                </tr>
-                                <% }) %>
-                        </tbody>
-                    </table>
+            <div class="container">
+                <h1 class="mb-4">Total Parties</h1>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Parties</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <% parties.forEach(party=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= party.party %>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

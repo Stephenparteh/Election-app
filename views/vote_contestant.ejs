@@ -14,7 +14,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">Election App</a>
+            <a class="navbar-brand fw-bold" href="#">Vote Contestant</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -61,7 +61,7 @@
 
         <!-- Main Content -->
         <div class="main-content p-4" style="flex: 1;">
-            <h1 class="mb-4">Total Voters</h1>
+            <h1 class="mb-4">Total Contestants</h1>
             <div class="row">
                 <div class="col-md-8">
                     <table class="table table-hover">
@@ -72,37 +72,44 @@
                                 <th>First Name</th>
                                 <th>Middle Name</th>
                                 <th>Last Name</th>
+                                <th>Position</th>
+                                <th>Party</th>
                                 <th>Vote</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% totalVoters.forEach(function(totalVoter) { %>
+                            <!-- <tr onclick="selectCandidate()">
+                                <td>
+                                    <input type="checkbox" name="candidate" id="vote">
+                                </td> -->
+
+                            <% contestants.forEach(function(contestant) { %>
                                 <tr>
                                     <td>
-                                        <img src="<%= totalVoter.photo %>" class="img-fluid rounded-circle"
+                                        <img src="<%= contestant.photo %>" class="img-fluid rounded-circle"
                                             style="height: 65px; width: 65px; object-fit: cover;" alt="">
                                     </td>
                                     <td>
-                                        <%= totalVoter.first_name %>
+                                        <%= contestant.first_name %>
                                     </td>
                                     <td>
-                                        <%= totalVoter.middle_name %>
+                                        <%= contestant.middle_name %>
                                     </td>
                                     <td>
-                                        <%= totalVoter.last_name %>
+                                        <%= contestant.last_name %>
                                     </td>
-                                    <!-- <td>
-                                        <a href="/votecontestant" class="btn btn-primary">Select to Vote</a>
-                                    </td> -->
                                     <td>
-                                        <% if (totalVoter.vote_id==="TRUE" ) { %>
-                                            <button class="btn btn-success">Voted</button>
-                                            <% } else { %>
-                                                <a href="/votecontestant" class="btn btn-primary">Select to Vote</a>
-                                                <% } %>
+                                        <%= contestant.position_id %>
                                     </td>
-
-
+                                    <td>
+                                        <%= contestant.party_id %>
+                                    </td>
+                                    <td>
+                                        <form action="/votecontestant" method="post">
+                                            <input type="hidden" name="candidateId" value="<%= contestant.id %>">
+                                            <button type="submit" class="btn btn-primary">Vote</button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 <% }) %>
                         </tbody>
@@ -115,6 +122,18 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function selectCandidate(row) {
+            // Deselect all checkboxes
+            const checkboxes = document.querySelectorAll('input[name="candidate"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+
+            // Select the clicked row's checkbox
+            const checkbox = row.querySelector('input[type="checkbox"]');
+            checkbox.checked = true;
+        }
+    </script>
 </body>
 
 </html>
